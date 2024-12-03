@@ -14,7 +14,7 @@ final class BaseTabBarController: UITabBarController {
         super.viewDidLoad()
         
         viewControllers = [
-            createNavController(viewcontroller: UIViewController(), title: "Главная", imageName: Assets.home.rawValue),
+            createNavController(viewcontroller: NewsVC(), title: "Главная", imageName: Assets.home.rawValue),
             createNavController(viewcontroller: UIViewController(), title: "Список каналов", imageName: Assets.rssList.rawValue),
             createNavController(viewcontroller: UIViewController(), title: "Настройки", imageName: Assets.settings.rawValue),
         ]
