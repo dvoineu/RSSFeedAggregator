@@ -74,7 +74,7 @@ final class DetailView: UIView {
         addSubview(lineView)
         
         cardView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.edges.equalToSuperview()
         }
         
         lineView.snp.makeConstraints { make in

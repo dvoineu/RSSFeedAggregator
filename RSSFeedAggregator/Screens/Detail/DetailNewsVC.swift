@@ -10,33 +10,43 @@ import CoreData
 
 final class DetailNewsVC: UIViewController {
     
+    // MARK: - Свойства
     private let detailView = DetailView()
-    var rssItem: Feed? = nil
+    var rssItem: Feed?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configureViewComponents()
-        
         configureRSSItem(rssItem: rssItem)
     }
     
+    // MARK: - Функции
     private func configureViewComponents() {
         view.backgroundColor = .systemBackground
         
         view.addSubview(detailView)
-        let navBarHeight = UIApplication.shared.statusBarFrame.size.height +
-                 (navigationController?.navigationBar.frame.height ?? 0.0)
         
+        let navBarHeight = getNavigationBarHeight()
         
-        detailView.setPosition(top: view.topAnchor,
-                               left: view.leftAnchor,
-                               bottom: view.bottomAnchor,
-                               right: view.rightAnchor,
-                               paddingTop: navBarHeight + 8,
-                               paddingLeft: 8,
-                               paddingBottom: 0,
-                               paddingRight: 8)
+        detailView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(8)
+            make.top.equalTo(navBarHeight + 8)
+            make.bottom.equalToSuperview().inset(80)
+        }
+    }
+    
+    private func getNavigationBarHeight() -> CGFloat {
+        var statusBarHeight: CGFloat = 0
+        
+        if #available(iOS 13.0, *) {
+            statusBarHeight = view.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 40
+        } else {
+            statusBarHeight = UIApplication.shared.statusBarFrame.height
+        }
+        
+        let navBarHeight = navigationController?.navigationBar.frame.height ?? 0
+        return statusBarHeight + navBarHeight
     }
     
     private func configureRSSItem(rssItem: Feed?) {
@@ -48,6 +58,7 @@ final class DetailNewsVC: UIViewController {
         
         detailView.titleLabel.text = title
         detailView.dateLabel.text = date.formattedDate
+        print(detailView.detailTextView.text ?? "Nothing")
         detailView.detailTextView.text = removeHTMLTags(from: description)
     }
     

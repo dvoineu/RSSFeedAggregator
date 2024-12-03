@@ -14,10 +14,10 @@ protocol MainVCViewModelType {
     func cellViewModel(forIndexPath: IndexPath) -> NewsTableViewCellViewModelType?
 }
 
-class FeedViewModel: MainVCViewModelType {
+final class FeedViewModel: MainVCViewModelType {
 
     var news: [Feed] = []
-    var currentSource: Source = Source(title: "Ведомости", url: "https://www.vedomosti.ru/rss/news")
+    var currentSource: Source = Source(title: "Ведомости", url: "https://www.vedomosti.ru/rss/articles")
     
     func numberOfRows() -> Int {
         return news.count

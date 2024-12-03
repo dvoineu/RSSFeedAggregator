@@ -55,8 +55,8 @@ final class SourceTableViewCell: UITableViewCell {
         cardView.layer.cornerRadius = 10
         cardView.clipsToBounds = true
         
-        self.tintColor = .systemBackground
-
+        self.tintColor = .link
+        
         setupConstraints()
     }
     
@@ -64,38 +64,28 @@ final class SourceTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    ///Наложение первого слоя UI
     private func setupConstraints() {
         addSubview(cardView)
-
-        cardView.setPosition(top: topAnchor,
-                             left: leftAnchor,
-                             bottom: bottomAnchor,
-                             right: rightAnchor,
-                             paddingTop: 12,
-                             paddingLeft: 16,
-                             paddingBottom: 12,
-                             paddingRight: 12)
+        
+        cardView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview().inset(12)
+        }
+        
+        let bottomConstraint = cardView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        bottomConstraint.priority = UILayoutPriority(999)
+        bottomConstraint.isActive = true
         
         cardView.addSubview(titleLabel)
         cardView.addSubview(urlLabel)
         
-        titleLabel.setPosition(top: cardView.topAnchor,
-                                       left: cardView.leftAnchor,
-                                       bottom: nil,
-                                       right: cardView.rightAnchor,
-                                       paddingTop: 16,
-                                       paddingLeft: 12,
-                                       paddingBottom: 0,
-                                       paddingRight: 12)
-
-        urlLabel.setPosition(top: titleLabel.bottomAnchor,
-                              left: titleLabel.leftAnchor,
-                              bottom: cardView.bottomAnchor,
-                              right: nil,
-                              paddingTop: 4,
-                              paddingLeft: 0,
-                              paddingBottom: 12,
-                              paddingRight: 0)
+        titleLabel.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+        }
+        
+        urlLabel.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
     }
 }

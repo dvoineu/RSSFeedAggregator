@@ -14,7 +14,7 @@ final class CoreDataManager {
     
     private init() { }
     
-    func getContext() -> NSManagedObjectContext {
+    private func getContext() -> NSManagedObjectContext {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         return appDelegate.persistentContainer.viewContext
     }
@@ -83,7 +83,6 @@ final class CoreDataManager {
             feedObject.isReading = news[i].isReading
             
             do {
-                print("save")
                 try context.save()
             } catch let error as NSError {
                 print(error.localizedDescription)

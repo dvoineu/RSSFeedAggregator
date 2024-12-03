@@ -8,10 +8,11 @@
 import UIKit
 import CoreData
 
-final class NewsVC: UIViewController, SourceListDataDelegate {
+final class NewsVC: UIViewController {
     
+    // MARK: - Свойства
     private let rssParser: RSSParser = RSSParser()
-    var viewModel: MainVCViewModelType?
+    private var viewModel: MainVCViewModelType?
     
     private let tableView = UITableView(frame: .zero, style: .plain)
     private var refreshControl = UIRefreshControl()
@@ -46,10 +47,7 @@ final class NewsVC: UIViewController, SourceListDataDelegate {
         updateNews()
     }
     
-    func updateSource(source: Source) {
-        viewModel?.currentSource = source
-        updateNews()
-    }
+    // MARK: - Функции
     
     private func updateNews() {
         viewModel?.news = []
@@ -58,10 +56,13 @@ final class NewsVC: UIViewController, SourceListDataDelegate {
             print("Internet Connection Available!")
             guard let url = viewModel?.currentSource.url else { return }
             refreshControl.beginRefreshing()
+            view.isUserInteractionEnabled = false
             rssParser.updateNews(currentSource: url) {[weak self] (objects) in
                 self?.viewModel?.news = objects
                 self?.tableView.reloadData()
+                CoreDataManager.shared.saveNews(news: objects)
             }
+            view.isUserInteractionEnabled = true
             refreshControl.endRefreshing()
         } else {
             print("Internet Connection not Available!")
@@ -83,12 +84,10 @@ final class NewsVC: UIViewController, SourceListDataDelegate {
         CoreDataManager.shared.saveNews(news: news)
     }
     
-    
     @objc func refresh(_ sender: AnyObject) {
         updateNews()
     }
-
-    // Установка UITableView
+    
     private func setupTableView() {
         
         tableView.dataSource = self
@@ -112,18 +111,21 @@ final class NewsVC: UIViewController, SourceListDataDelegate {
         setupConstraints()
     }
     
-    // Установка Constraint для UITableView
     private func setupConstraints() {
-        tableView.fillToSuperView(view: view)
+        
+        tableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         
         emptyNewsLabel.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
         emptyNewsLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 50).isActive = true
-
+        
         emptyNewsImage.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
         emptyNewsImage.topAnchor.constraint(equalTo: emptyNewsLabel.bottomAnchor, constant: 25).isActive = true
     }
 }
 
+// MARK: - UITableViewDataSource
 extension NewsVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
@@ -143,12 +145,23 @@ extension NewsVC: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
 extension NewsVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let viewModel = viewModel else { return }
         let detailVC = DetailNewsVC()
-        viewModel?.news[indexPath.row].isReading = true
+        viewModel.news[indexPath.row].isReading = true
         tableView.reloadData()
-        detailVC.rssItem = viewModel?.news[indexPath.row]
+        CoreDataManager.shared.saveNews(news: viewModel.news)
+        detailVC.rssItem = viewModel.news[indexPath.row]
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+}
+
+// MARK: - SourceListDataDelegate
+extension NewsVC: SourceListDataDelegate {
+    func updateSource(source: Source) {
+        viewModel?.currentSource = source
+        updateNews()
     }
 }

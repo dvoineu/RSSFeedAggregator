@@ -6,13 +6,15 @@
 //
 
 import UIKit
+import SnapKit
 
-protocol SourceListDataDelegate: class {
+protocol SourceListDataDelegate: AnyObject {
     func updateSource(source: Source)
 }
 
-class SourceListVC: UIViewController {
+final class SourceListVC: UIViewController {
     
+    // MARK: - Свойства
     private var viewModel: SourceViewModelType?
     weak var delegate: SourceListDataDelegate?
     
@@ -29,7 +31,7 @@ class SourceListVC: UIViewController {
     }()
     
     private let emptySourceImage: UIImageView = {
-        let image = #imageLiteral(resourceName: "not-found")
+        let image = UIImage(named: "rss-placeholder")
         let imageView = UIImageView(image: image)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -37,7 +39,7 @@ class SourceListVC: UIViewController {
     
     private lazy var addSourceAlert: UIAlertController = {
         
-        let alert = UIAlertController(title: "Добавьте RSS-источник", message: "Введите название источника и его адрес", preferredStyle:UIAlertController.Style.alert)
+        let alert = UIAlertController(title: "Добавьте RSS-источник", message: "Введите название источника и его адрес", preferredStyle: UIAlertController.Style.alert)
         
         alert.addTextField {
             $0.placeholder = "Название"
@@ -67,6 +69,7 @@ class SourceListVC: UIViewController {
             self.viewModel?.sources.append(newSource)
             self.tableView.reloadData()
             self.delegate?.updateSource(source: newSource)
+            self.viewModel?.saveSourcesInUserDefaults()
            
             titleTextField.text = ""
             urlTextField.text = ""
@@ -90,26 +93,19 @@ class SourceListVC: UIViewController {
         view.backgroundColor = .systemBackground
         viewModel = SourceViewModel()
         viewModel?.loadSources()
-        
-        
         viewModel?.setIsCurrent()
         setupTableView()
         
         let logoutBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addSourceClicked(btn:)))
         self.navigationItem.rightBarButtonItem  = logoutBarButtonItem
-        self.navigationItem.rightBarButtonItem?.tintColor = .gray
+        self.navigationItem.rightBarButtonItem?.tintColor = .link
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        viewModel?.saveSourcesInUserDefaults()
-    }
-    
+    // MARK: - Функции
     @objc func addSourceClicked(btn: UIBarButtonItem){
         self.present(addSourceAlert, animated: true, completion: nil)
     }
     
-    // Установка UITableView
     private func setupTableView() {
         
         tableView.dataSource = self
@@ -127,9 +123,11 @@ class SourceListVC: UIViewController {
         setupConstraints()
     }
     
-    // Установка Constraint для UITableView
     private func setupConstraints() {
-        tableView.fillToSuperView(view: view)
+        
+        tableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         
         emptySourceLabel.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
         emptySourceLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 50).isActive = true
@@ -139,7 +137,7 @@ class SourceListVC: UIViewController {
     }
 }
 
-
+// MARK: - UITableViewDataSource
 extension SourceListVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         emptySourceLabel.isHidden = viewModel?.numberOfRows() != 0
@@ -165,11 +163,11 @@ extension SourceListVC: UITableViewDataSource {
         return cell
     }
 }
-//MARK:- UITableViewDelegate
+
+// MARK: - UITableViewDelegate
 extension SourceListVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-        // Принудительно извлекаю viewModel, потому что знаю, что проинициализировал ее
         for i in 0..<viewModel!.sources.count {
             viewModel!.sources[i].isCurrent = false
         }
@@ -184,7 +182,7 @@ extension SourceListVC: UITableViewDelegate {
     }
 }
 
-//MARK:- UITextFieldDelegate
+// MARK: - UITextFieldDelegate
 extension SourceListVC: UITextFieldDelegate {
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -192,4 +190,3 @@ extension SourceListVC: UITextFieldDelegate {
         return true
     }
 }
-
