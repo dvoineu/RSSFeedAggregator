@@ -97,7 +97,10 @@ extension NewsVC: UITableViewDataSource {
 
 extension NewsVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let detailVC = DetailNewsVC()
         viewModel?.news[indexPath.row].isReading = true
         tableView.reloadData()
+        detailVC.rssItem = viewModel?.news[indexPath.row]
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 }
