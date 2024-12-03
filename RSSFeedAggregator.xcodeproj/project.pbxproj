@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		FA70A2722CFF05CE00B303B1 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = FA70A2712CFF05CE00B303B1 /* SnapKit */; };
+		FA70A2DD2CFF743C00B303B1 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = FA70A2DC2CFF743C00B303B1 /* SDWebImage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA70A2DD2CFF743C00B303B1 /* SDWebImage in Frameworks */,
 				FA70A2722CFF05CE00B303B1 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +86,7 @@
 			name = RSSFeedAggregator;
 			packageProductDependencies = (
 				FA70A2712CFF05CE00B303B1 /* SnapKit */,
+				FA70A2DC2CFF743C00B303B1 /* SDWebImage */,
 			);
 			productName = RSSFeedAggregator;
 			productReference = FAA939502CFEE99000FFE9F1 /* RSSFeedAggregator.app */;
@@ -115,6 +118,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				FA70A2702CFF05CE00B303B1 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				FA70A2DB2CFF743C00B303B1 /* XCRemoteSwiftPackageReference "SDWebImage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FAA939512CFEE99000FFE9F1 /* Products */;
@@ -362,6 +366,14 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		FA70A2DB2CFF743C00B303B1 /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.20.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -369,6 +381,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FA70A2702CFF05CE00B303B1 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		FA70A2DC2CFF743C00B303B1 /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FA70A2DB2CFF743C00B303B1 /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

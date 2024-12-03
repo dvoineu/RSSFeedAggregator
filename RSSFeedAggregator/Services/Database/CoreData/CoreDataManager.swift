@@ -49,7 +49,7 @@ final class CoreDataManager {
         }
     }
     
-    func addNews(feedTitle: String, feedDate: String, feedDescription: String) -> Feed? {
+    func addNews(feedTitle: String, feedDate: String, feedDescription: String, imageUrl: String) -> Feed? {
         let context = getContext()
         
         guard let entity = NSEntityDescription.entity(forEntityName: "Feed", in: context) else { return nil }
@@ -58,6 +58,7 @@ final class CoreDataManager {
         feedObject.title = feedTitle
         feedObject.date = feedDate
         feedObject.feedDescription = feedDescription
+        feedObject.imageUrl = imageUrl
         
         do {
             try context.save()
@@ -80,6 +81,7 @@ final class CoreDataManager {
             feedObject.title = news[i].title
             feedObject.date = news[i].date
             feedObject.feedDescription = news[i].feedDescription
+            feedObject.imageUrl = news[i].imageUrl
             feedObject.isReading = news[i].isReading
             
             do {

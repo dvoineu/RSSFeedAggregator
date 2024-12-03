@@ -11,18 +11,27 @@ import CoreData
 final class RSSParser: NSObject {
 
     private var feeds: [Feed] = []
-    private var elementName: String = String()
-    private var feedTitle = String()
-    private var feedDate = String()
-    private var feedDescription = String()
+    private var elementName = ""
+    private var feedTitle = ""
+    private var feedDate = ""
+    private var feedImageURL = ""
+    private var feedDescription = ""
+    private var currentSource = ""
     
     private let networkDataFetcher = NetworkDataFetcher()
+    
+    func parse(data: Data, source: String) -> [Feed]? {
+        currentSource = source
+        let parser = XMLParser(data: data)
+        parser.delegate = self
+        return parser.parse() ? feeds : nil
+    }
     
     func updateNews(currentSource: String, completion: @escaping ([Feed]) -> Void) {
         feeds = []
         CoreDataManager.shared.deleteNews()
         
-        self.networkDataFetcher.fetchNewsData(sourceURL: currentSource) { [self] (data) in
+        networkDataFetcher.fetchNewsData(sourceURL: currentSource) { [self] (data) in
             guard let data = data else { return }
             
             let parser = XMLParser(data: data)
@@ -63,7 +72,7 @@ extension RSSParser: XMLParserDelegate {
     
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if elementName == "item" {
-            guard let savedNews = CoreDataManager.shared.addNews(feedTitle: feedTitle, feedDate: feedDate, feedDescription: feedDescription) else { return }
+            guard let savedNews = CoreDataManager.shared.addNews(feedTitle: feedTitle, feedDate: feedDate, feedDescription: feedDescription, imageUrl: feedImageURL) else { return }
             feeds.append(savedNews)
         }
     }

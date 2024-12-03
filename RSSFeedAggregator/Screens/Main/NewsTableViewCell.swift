@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import SDWebImage
 
 final class NewsTableViewCell: UITableViewCell {
     static let reuseId = "NewsTableViewCell"
@@ -16,26 +17,20 @@ final class NewsTableViewCell: UITableViewCell {
             guard let viewModel = viewModel else { return }
             titleLabel.text = viewModel.title
             dateLabel.text = viewModel.date
-//            sourceTitleLabel.text = viewModel.title
-            isSelectedView.isHidden = viewModel.isReading ? false : true
+            sourceTitleLabel.text = viewModel.sourceTitle
+            titleLabel.alpha = viewModel.isReading ? 0.3 : 1.0
+            dateLabel.alpha = viewModel.isReading ? 0.3 : 1.0
+            sourceTitleLabel.alpha = viewModel.isReading ? 0.3 : 1.0
         }
     }
-    
-   // MARK: - Создание объектов кастомной ячейки
 
    private let cardView: UIView = {
         let view = UIView()
        view.backgroundColor = .systemBackground
         return view
     }()
-    
-    let isSelectedView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .lightGray
-        return view
-    }()
 
-    let titleLabel: UILabel = {
+    private let titleLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
         label.font = UIFont.systemFont(ofSize: 16.0, weight: .semibold)
@@ -58,7 +53,6 @@ final class NewsTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14.0)
         label.textColor = .label
-        label.text = "Источник: Vedomosti"
 
         return label
     }()
@@ -79,20 +73,13 @@ final class NewsTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: Private functions
+    // MARK: Функции
     
     private func setupConstraints() {
         addSubview(cardView)
-        addSubview(isSelectedView)
         
         cardView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-        }
-        
-        isSelectedView.snp.makeConstraints { make in
-            make.top.bottom.leading.equalToSuperview()
-            make.width.equalTo(4)
-            make.height.equalToSuperview()
         }
         
         cardView.addSubview(titleLabel)

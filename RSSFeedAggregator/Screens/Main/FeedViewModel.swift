@@ -25,7 +25,7 @@ final class FeedViewModel: MainVCViewModelType {
     
     func cellViewModel(forIndexPath indexPath: IndexPath) -> NewsTableViewCellViewModelType? {
         let feed = news[indexPath.row]
-        return NewsTableViewCellViewModel(feed: feed)
+        return NewsTableViewCellViewModel(feed: feed, source: currentSource)
     }
     
 }

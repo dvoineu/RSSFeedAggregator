@@ -151,8 +151,8 @@ extension NewsVC: UITableViewDelegate {
         guard let viewModel = viewModel else { return }
         let detailVC = DetailNewsVC()
         viewModel.news[indexPath.row].isReading = true
-        tableView.reloadData()
         CoreDataManager.shared.saveNews(news: viewModel.news)
+        tableView.reloadData()
         detailVC.rssItem = viewModel.news[indexPath.row]
         navigationController?.pushViewController(detailVC, animated: true)
     }

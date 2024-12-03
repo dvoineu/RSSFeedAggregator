@@ -17,6 +17,7 @@ protocol NewsTableViewCellViewModelType: AnyObject {
 final class NewsTableViewCellViewModel: NewsTableViewCellViewModelType {
     
     private var feed: Feed
+    private var source: Source
     
     var title: String {
         return feed.title ?? ""
@@ -27,14 +28,15 @@ final class NewsTableViewCellViewModel: NewsTableViewCellViewModelType {
     }
     
     var sourceTitle: String {
-        return feed.title ?? ""
+        return source.url
     }
     
     var isReading: Bool {
         return feed.isReading
     }
     
-    init(feed: Feed) {
+    init(feed: Feed, source: Source) {
         self.feed = feed
+        self.source = source
     }
 }
