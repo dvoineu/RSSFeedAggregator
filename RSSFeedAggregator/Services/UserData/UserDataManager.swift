@@ -18,9 +18,9 @@ struct UserDataManager {
 
         init(_ json: [String: [String]]) {
                         
-            self.savedSourcesTitle = json[sourceTitleKey] ?? ["Banki", "Vedomosti"]
+            self.savedSourcesTitle = json[sourceTitleKey] ?? ["Vedomosti", "Banki"]
             
-            self.savedSourcesURL = json[sourceURLKey] ?? ["https://www.banki.ru/xml/news.rss", "https://www.vedomosti.ru/rss/articles"]
+            self.savedSourcesURL = json[sourceURLKey] ?? ["https://www.vedomosti.ru/rss/articles", "https://www.banki.ru/xml/news.rss"]
         }
     }
     static func saveSources(sourcesTitle: [String], sourcesURL: [String]) {
