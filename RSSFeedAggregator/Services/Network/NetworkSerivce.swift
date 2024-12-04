@@ -29,6 +29,8 @@ final class NetworkService: Networking {
         task.resume()
     }
     
+    
+    
     ///Формирует необходимую задачу для запроса данных из сети
     ///
     /// - Parameters:

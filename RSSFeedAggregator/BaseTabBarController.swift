@@ -15,6 +15,7 @@ final class BaseTabBarController: UITabBarController {
         
         let newsVC = NewsVC()
         let sourceVC = SourceListVC()
+        let settingsVC = SettingsVC()
         
         self.delegate = self
         sourceVC.delegate = newsVC
@@ -22,7 +23,7 @@ final class BaseTabBarController: UITabBarController {
         viewControllers = [
             createNavController(viewcontroller: newsVC, title: "Главная", imageName: Assets.home.rawValue),
             createNavController(viewcontroller: sourceVC, title: "Список каналов", imageName: Assets.rssList.rawValue),
-            createNavController(viewcontroller: UIViewController(), title: "Настройки", imageName: Assets.settings.rawValue),
+            createNavController(viewcontroller: settingsVC, title: "Настройки", imageName: Assets.settings.rawValue),
         ]
     }
     
@@ -39,9 +40,7 @@ final class BaseTabBarController: UITabBarController {
     }
 }
 
-extension BaseTabBarController: UITabBarControllerDelegate {
-    
-}
+extension BaseTabBarController: UITabBarControllerDelegate {}
 
 struct BaseTabBarController_Previews: PreviewProvider {
     
