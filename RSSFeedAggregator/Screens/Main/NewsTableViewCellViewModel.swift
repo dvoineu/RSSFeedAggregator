@@ -11,6 +11,7 @@ protocol NewsTableViewCellViewModelType: AnyObject {
     var title: String { get }
     var date: String { get }
     var sourceTitle: String { get }
+    var imageUrl: String? { get }
     var isReading: Bool  { get }
 }
 
@@ -25,6 +26,10 @@ final class NewsTableViewCellViewModel: NewsTableViewCellViewModelType {
     
     var date: String {
         return feed.date?.formattedDate ?? "Ошибка форматирования даты"
+    }
+    
+    var imageUrl: String? {
+        return feed.imageUrl
     }
     
     var sourceTitle: String {

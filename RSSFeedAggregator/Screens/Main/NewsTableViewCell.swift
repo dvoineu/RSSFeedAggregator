@@ -20,7 +20,13 @@ final class NewsTableViewCell: UITableViewCell {
             
             sourceTitleLabel.text = viewModel.sourceTitle
             
-            feedImage.image = viewModel.isReading ? UIImage(named: "RSS") : UIImage(named: "rss-placeholder")
+            if let imageURLString = viewModel.imageUrl, let imageURL = URL(string: imageURLString) {
+                feedImage.sd_setImage(with: imageURL, placeholderImage: UIImage(named: "rss-placeholder"))
+            } else {
+                feedImage.image = UIImage(named: "rss-placeholder")
+            }
+            
+            feedImage.alpha = viewModel.isReading ? 0.3 : 1.0
             titleLabel.alpha = viewModel.isReading ? 0.3 : 1.0
             dateLabel.alpha = viewModel.isReading ? 0.3 : 1.0
             sourceTitleLabel.alpha = viewModel.isReading ? 0.3 : 1.0
@@ -29,7 +35,6 @@ final class NewsTableViewCell: UITableViewCell {
     
     let feedImage: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "rss-placeholder")
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 10.0
