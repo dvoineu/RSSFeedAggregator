@@ -17,22 +17,29 @@ final class NewsTableViewCell: UITableViewCell {
             guard let viewModel = viewModel else { return }
             titleLabel.text = viewModel.title
             dateLabel.text = viewModel.date
+            
             sourceTitleLabel.text = viewModel.sourceTitle
+            
+            feedImage.image = viewModel.isReading ? UIImage(named: "RSS") : UIImage(named: "rss-placeholder")
             titleLabel.alpha = viewModel.isReading ? 0.3 : 1.0
             dateLabel.alpha = viewModel.isReading ? 0.3 : 1.0
             sourceTitleLabel.alpha = viewModel.isReading ? 0.3 : 1.0
         }
     }
-
-   private let cardView: UIView = {
-        let view = UIView()
-       view.backgroundColor = .systemBackground
-        return view
+    
+    let feedImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "rss-placeholder")
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 10.0
+        
+        return imageView
     }()
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.numberOfLines = 0
+        label.numberOfLines = 2
         label.font = UIFont.systemFont(ofSize: 16.0, weight: .semibold)
         label.textColor = .label
 
@@ -43,7 +50,7 @@ final class NewsTableViewCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 0
-        label.font = UIFont.systemFont(ofSize: 14.0, weight: .regular)
+        label.font = UIFont.systemFont(ofSize: 12.0, weight: .regular)
         label.textColor = .gray
 
         return label
@@ -51,10 +58,17 @@ final class NewsTableViewCell: UITableViewCell {
     
     let sourceTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14.0)
+        label.font = UIFont.systemFont(ofSize: 12.0)
         label.textColor = .label
 
         return label
+    }()
+    
+    private lazy var vStackView: UIStackView = {
+        let stackView  = UIStackView(arrangedSubviews: [titleLabel, dateLabel, sourceTitleLabel])
+        stackView.axis = .vertical
+        stackView.spacing = 4
+        return stackView
     }()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -62,9 +76,6 @@ final class NewsTableViewCell: UITableViewCell {
 
         backgroundColor = .clear
         selectionStyle = .none
-        
-        cardView.layer.cornerRadius = 10
-        cardView.clipsToBounds = true
         
         setupConstraints()
     }
@@ -76,30 +87,19 @@ final class NewsTableViewCell: UITableViewCell {
     // MARK: Функции
     
     private func setupConstraints() {
-        addSubview(cardView)
         
-        cardView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        contentView.addSubview(feedImage)
+        contentView.addSubview(vStackView)
+        
+        feedImage.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(8)
+            make.top.bottom.equalToSuperview().inset(8)
+            make.size.equalTo(80)
         }
         
-        cardView.addSubview(titleLabel)
-        cardView.addSubview(dateLabel)
-        cardView.addSubview(sourceTitleLabel)
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(8)
-        }
-        
-        dateLabel.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp_bottomMargin).offset(8)
-            make.leading.equalTo(titleLabel)
-            
-        }
-        
-        sourceTitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(dateLabel.snp_bottomMargin).offset(8)
-            make.leading.equalTo(titleLabel)
-            make.bottom.equalTo(cardView).inset(8)
+        vStackView.snp.makeConstraints { make in
+            make.leading.equalTo(feedImage.snp_trailingMargin).offset(16)
+            make.top.bottom.trailing.equalToSuperview().inset(8)
         }
     }
 }
