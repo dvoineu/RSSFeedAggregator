@@ -1,0 +1,21 @@
+<rss version="2.0">
+    <channel>
+        <title>"Ведомости". Ежедневная деловая газета</title>
+        <link>https://www.vedomosti.ru</link>
+        <description>"Ведомости". Новости, 04.12.2024</description>
+        <image>
+            <url>https://cdn.vdmsti.ru/assets/rss_logo.gif</url>
+            <title>"Ведомости". Ежедневная деловая газета</title>
+            <link>https://www.vedomosti.ru</link>
+        </image>
+        <item>
+            <title>Путин обновил состав президентского совета по правам человека</title>
+            <link>https://www.vedomosti.ru/society/articles/2024/12/04/1079308-putin-obnovil-sostav-soveta-po-pravam-cheloveka</link>
+            <guid>https://www.vedomosti.ru/society/articles/2024/12/04/1079308-putin-obnovil-sostav-soveta-po-pravam-cheloveka</guid>
+            <category>Общество</category>
+            <enclosure url="https://cdn.vdmsti.ru/image/2024/9f/13lkqp/normal-1fbj.jpg" type="image/jpeg"/>
+            <description>Президент России Владимир Путин включил в состав президентского совета по правам человека депутата петербургского законодательного собрания Александра Малькевича, ректора ВШЭ Никиту Анисимова и председателя Федерации независимых профсоюзов России (ФНПР) Сергея Черногаева, следует из указа на официальном портале правовых актов.</description>
+            <pubDate>Wed, 04 Dec 2024 19:53:45 +0300</pubDate>
+        </item>
+    </channel>
+</rss>

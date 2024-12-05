@@ -46,12 +46,17 @@ extension RSSParser: XMLParserDelegate {
 
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         
-        if elementName == "item" {
-            feedTitle = String()
-            feedDate = String()
-            feedDescription = String()
-        }
         self.elementName = elementName
+        if elementName == "item" {
+            feedTitle = ""
+            feedDate = ""
+            feedDescription = ""
+            feedImageURL = ""
+        }
+        
+        if elementName == "enclosure", let url = attributeDict["url"] {
+            feedImageURL = url
+        }
     }
     
     func parser(_ parser: XMLParser, foundCharacters string: String) {
