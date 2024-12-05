@@ -7,11 +7,12 @@
 
 import UIKit
 import CoreData
+import SDWebImage
 
 final class DetailNewsVC: UIViewController {
     
     // MARK: - Свойства
-    private let detailView = DetailView()
+    private let detailView = DetailNewsView()
     var rssItem: Feed?
     
     override func viewDidLoad() {
@@ -30,7 +31,8 @@ final class DetailNewsVC: UIViewController {
         let navBarHeight = getNavigationBarHeight()
         
         detailView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(8)
+            make.leading.equalToSuperview()
+            make.trailing.equalToSuperview().inset(8)
             make.top.equalTo(navBarHeight + 8)
             make.bottom.equalToSuperview().inset(80)
         }
@@ -52,13 +54,15 @@ final class DetailNewsVC: UIViewController {
     private func configureRSSItem(rssItem: Feed?) {
         guard let title = rssItem?.title,
               let date = rssItem?.date,
-              let description = rssItem?.feedDescription else {
+              let description = rssItem?.feedDescription,
+              let imageUrl = rssItem?.imageUrl else {
             return
         }
         
+        detailView.feedImage.sd_setImage(with: URL(string: imageUrl), placeholderImage: UIImage(named: "rss-placeholder"))
+        
         detailView.titleLabel.text = title
         detailView.dateLabel.text = date.formattedDate
-        print(detailView.detailTextView.text ?? "Nothing")
         detailView.detailTextView.text = removeHTMLTags(from: description)
     }
     

@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-final class DetailView: UIView {
+final class DetailNewsView: UIView {
     
    private let cardView: UIView = {
         let view = UIView()
@@ -16,10 +16,13 @@ final class DetailView: UIView {
         return view
     }()
     
-    private let lineView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .gray
-        return view
+    let feedImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 10.0
+        
+        return imageView
     }()
     
     var titleLabel: UILabel = {
@@ -51,6 +54,13 @@ final class DetailView: UIView {
         return textView
     }()
     
+    private lazy var vStackView: UIStackView = {
+        let stackView  = UIStackView(arrangedSubviews: [feedImage, dateLabel, titleLabel, detailTextView])
+        stackView.axis = .vertical
+        stackView.spacing = 4
+        return stackView
+    }()
+    
     // MARK: - Инициализация
 
     override init(frame: CGRect) {
@@ -71,35 +81,20 @@ final class DetailView: UIView {
     
     private func setupConstraints() {
         addSubview(cardView)
-        addSubview(lineView)
         
         cardView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
         
-        lineView.snp.makeConstraints { make in
-            make.height.equalTo(3)
-            make.top.leading.trailing.equalTo(cardView)
+        cardView.addSubview(vStackView)
+        
+        feedImage.snp.makeConstraints { make in
+            make.width.equalToSuperview().inset(8)
+            make.height.equalTo(200)
         }
         
-        cardView.addSubview(dateLabel)
-        cardView.addSubview(titleLabel)
-        cardView.addSubview(detailTextView)
-        
-        dateLabel.snp.makeConstraints { make in
-            make.top.leading.equalTo(cardView).inset(8)
-        }
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(dateLabel.snp.bottom).offset(4)
-            make.leading.equalTo(dateLabel)
-            make.trailing.equalTo(cardView).inset(8)
-        }
-        
-        detailTextView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
-            make.leading.equalTo(titleLabel)
-            make.trailing.bottom.equalTo(cardView).inset(8)
+        vStackView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
 }
