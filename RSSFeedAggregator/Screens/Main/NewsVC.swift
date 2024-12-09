@@ -31,7 +31,7 @@ final class NewsVC: UIViewController {
     
     private let emptyNewsLabel: UILabel = {
         let label = UILabel()
-        label.text = "Добавьте URL и имя в разделе Настроек"
+        label.text = "Упс! Нечего показывать :)"
         label.textAlignment = .center
         label.numberOfLines = 0
         label.font = UIFont.boldSystemFont(ofSize: 17)
@@ -84,7 +84,7 @@ final class NewsVC: UIViewController {
             
             let enabledSources = sources.filter { $0.isEnabled }
             let dispatchGroup = DispatchGroup()
-            var allNews: [Feed] = []
+            var allNews = Set<Feed>()
             
             refreshControl.beginRefreshing()
             view.isUserInteractionEnabled = false
@@ -92,7 +92,7 @@ final class NewsVC: UIViewController {
             for source in enabledSources {
                 dispatchGroup.enter()
                 rssParser.updateNews(currentSource: source.url) { items in
-                    allNews.append(contentsOf: items)
+                    allNews.formUnion(items)
                     dispatchGroup.leave()
                 }
             }
@@ -119,6 +119,24 @@ final class NewsVC: UIViewController {
         } else {
             print("Internet Connection not Available!")
             guard let news = CoreDataManager.shared.loadNews() else { return }
+            
+            guard let data = UserDefaults.standard.data(forKey: "newsSources"),
+                  let sources = try? JSONDecoder().decode([FeedSource].self, from: data) else { return }
+            
+            let enabledSourceUrls = sources.filter { $0.isEnabled }.map { $0.url }
+            
+            let filteredNews = news.filter { newsItem in
+                guard let newsSource = newsItem.sourceUrl else { return false }
+                return enabledSourceUrls.contains(newsSource)
+            }
+
+            viewModel?.news = filteredNews.sorted { first, second in
+                guard let firstDate = DateFormatter.dateFormatFromXML.date(from: first.date ?? ""),
+                      let secondDate = DateFormatter.dateFormatFromXML.date(from: second.date ?? "") else {
+                    return false
+                }
+                return firstDate > secondDate
+            }
             
             let sortedNews = news.sorted { first, second in
                 guard let firstDate = DateFormatter.dateFormatFromXML.date(from: first.date ?? ""),

@@ -36,6 +36,11 @@ final class RSSParser: NSObject {
             
             let parser = XMLParser(data: data)
             parser.delegate = self
+            feeds = feeds.map { feed in
+                var updatedFeed = feed
+                updatedFeed.sourceUrl = currentSource
+                return updatedFeed
+            }
             parser.parse()
             completion(feeds)
         }

@@ -33,7 +33,6 @@ final class FeedSourceViewModel: IFeedSourceViewModel {
 final class SettingsVC: UIViewController {
     
     // MARK: - Свойства
-//    private var viewModel: SourceViewModelType?
     
     weak var delegate: SettingsDelegate?
     
@@ -43,11 +42,6 @@ final class SettingsVC: UIViewController {
         get {
             guard let data = UserDefaults.standard.data(forKey: "newsSources"),
                   let sources = try? JSONDecoder().decode([FeedSource].self, from: data) else {
-//                // Значения по умолчанию
-//                return [
-//                    FeedSource(name: "Ведомости", url: "https://www.vedomosti.ru/info/rss", isEnabled: true),
-//                    FeedSource(name: "РБК", url: "http://static.feed.rbc.ru/rbc/internal/rss.rbc.ru/rbc.ru/news.rss", isEnabled: true)
-//                ]
                 return []
             }
             return sources
@@ -88,8 +82,6 @@ final class SettingsVC: UIViewController {
     // MARK: - View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-//        viewModel = SourceViewModel()
-//        viewModel?.loadSources()
         
         let addBarButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addSourceClicked))
         navigationItem.rightBarButtonItem = addBarButton
@@ -256,6 +248,7 @@ extension SettingsVC {
     @objc private func toggleSource(_ sender: UISwitch) {
         sources[sender.tag].isEnabled = sender.isOn
         saveSourcesToUserDefaults()
+        delegate?.didUpdateSources()
     }
 }
 
