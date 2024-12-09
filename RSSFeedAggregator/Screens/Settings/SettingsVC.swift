@@ -15,8 +15,12 @@ struct FeedSource: Codable {
 }
 
 protocol IFeedSourceViewModel {}
+protocol SettingsDelegate: AnyObject {
+    func didUpdateSources()
+}
 
 final class FeedSourceViewModel: IFeedSourceViewModel {
+    
     var feedSources: [FeedSource] = []
     
     func numberOfFeedSources() -> Int {
@@ -28,13 +32,11 @@ final class SettingsVC: UIViewController {
     
     // MARK: - Свойства
 //    private var viewModel: SourceViewModelType?
-//    weak var delegate: SourceListDataDelegate?
+    
+    weak var delegate: SettingsDelegate?
     
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private let frequencies = ["5 минут", "10 минут", "30 минут", "1 час"]
-//    private let sources = [String]()
-    
-    
     private var sources: [FeedSource] {
         get {
             guard let data = UserDefaults.standard.data(forKey: "newsSources"),
@@ -135,12 +137,11 @@ final class SettingsVC: UIViewController {
                 self.sources.append(newSource) // Добавляем новый источник
                 tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
                 self.saveSourcesToUserDefaults()
+                self.delegate?.didUpdateSources()
             }
             
             alert.addAction(cancelAction)
-            print("Log: \(sources)")
             alert.addAction(saveAction)
-            print("Log: \(sources)")
             present(alert, animated: true)
         }
         

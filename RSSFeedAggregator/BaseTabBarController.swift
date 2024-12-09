@@ -15,6 +15,7 @@ final class BaseTabBarController: UITabBarController {
         
         let newsVC = NewsVC()
         let settingsVC = SettingsVC()
+        settingsVC.delegate = newsVC
         
         self.delegate = self
         

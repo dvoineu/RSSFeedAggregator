@@ -20,7 +20,7 @@ final class NewsVC: UIViewController {
     
     private let emptyNewsLabel: UILabel = {
         let label = UILabel()
-        label.text = "Не удалось загрузить новости\n по текущуему адресу"
+        label.text = "Добавьте URL и имя в разделе Настроек"
         label.textAlignment = .center
         label.numberOfLines = 0
         label.font = UIFont.boldSystemFont(ofSize: 17)
@@ -197,6 +197,13 @@ extension NewsVC: UITableViewDelegate {
 extension NewsVC: SourceListDataDelegate {
     func updateSource(source: Source) {
         viewModel?.currentSource = source
+        updateNews()
+    }
+}
+
+// MARK: - SettingsDelegate
+extension NewsVC: SettingsDelegate {
+    func didUpdateSources() {
         updateNews()
     }
 }
