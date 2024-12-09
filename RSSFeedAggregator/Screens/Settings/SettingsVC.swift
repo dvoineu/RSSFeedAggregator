@@ -15,8 +15,10 @@ struct FeedSource: Codable {
 }
 
 protocol IFeedSourceViewModel {}
+
 protocol SettingsDelegate: AnyObject {
     func didUpdateSources()
+    func didUpdateFrequency()
 }
 
 final class FeedSourceViewModel: IFeedSourceViewModel {
@@ -101,7 +103,6 @@ final class SettingsVC: UIViewController {
         title = "Настройки"
         view.backgroundColor = .systemBackground
         
-        // TableView setup
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
@@ -163,8 +164,8 @@ extension SettingsVC: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0: return frequencies.count // Частота обновления
-        case 1: return sources.count // Источники новостей
+        case 0: return frequencies.count
+        case 1: return sources.count
         default: return 0
         }
     }
@@ -217,6 +218,7 @@ extension SettingsVC: UITableViewDelegate {
         if indexPath.section == 0 {
             selectedFrequency = frequencies[indexPath.row]
             tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+            delegate?.didUpdateFrequency()
         }
     }
     

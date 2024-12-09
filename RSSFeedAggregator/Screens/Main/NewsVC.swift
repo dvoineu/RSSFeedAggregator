@@ -11,6 +11,17 @@ import CoreData
 final class NewsVC: UIViewController {
     
     // MARK: - Свойства
+    private var updateTimer: Timer?
+    private var updateInterval: TimeInterval {
+        let frequency = UserDefaults.standard.string(forKey: "selectedFrequency") ?? "10 минут"
+        switch frequency {
+        case "5 минут": return 5 * 60
+        case "30 минут": return 30 * 60
+        case "1 час": return 60 * 60
+        default: return 10 * 60
+        }
+    }
+    
     private let rssParser: RSSParser = RSSParser()
     private var viewModel: MainVCViewModelType?
     
@@ -35,6 +46,7 @@ final class NewsVC: UIViewController {
         return imageView
     }()
     
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -42,6 +54,21 @@ final class NewsVC: UIViewController {
         
         setupTableView()
         updateNews()
+        startUpdateTimer()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.reloadData()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopUpdateTimer()
+        
+        guard let news = viewModel?.news else { return }
+        
+        CoreDataManager.shared.saveNews(news: news)
     }
     
     // MARK: - Функции
@@ -106,18 +133,7 @@ final class NewsVC: UIViewController {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        tableView.reloadData()
-    }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        guard let news = viewModel?.news else { return }
-        
-        CoreDataManager.shared.saveNews(news: news)
-    }
     
     @objc func refresh(_ sender: AnyObject) {
         updateNews()
@@ -204,6 +220,31 @@ extension NewsVC: SourceListDataDelegate {
 // MARK: - SettingsDelegate
 extension NewsVC: SettingsDelegate {
     func didUpdateSources() {
+        updateNews()
+    }
+    
+    func didUpdateFrequency() {
+        startUpdateTimer()
+    }
+}
+
+// MARK: - Timer for news update
+extension NewsVC {
+    private func startUpdateTimer() {
+        stopUpdateTimer()
+        updateTimer = Timer.scheduledTimer(timeInterval: updateInterval,
+                                         target: self,
+                                         selector: #selector(autoUpdateNews),
+                                         userInfo: nil,
+                                         repeats: true)
+    }
+
+    private func stopUpdateTimer() {
+        updateTimer?.invalidate()
+        updateTimer = nil
+    }
+
+    @objc private func autoUpdateNews() {
         updateNews()
     }
 }
