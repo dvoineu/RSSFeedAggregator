@@ -7,19 +7,90 @@
 
 import UIKit
 
-class SettingsVC: UIViewController {
+// MARK: - Source Model
+struct FeedSource: Codable {
+    let name: String
+    let url: String
+    var isEnabled: Bool
+}
 
-    // MARK: - Properties
+protocol IFeedSourceViewModel {}
+
+final class FeedSourceViewModel: IFeedSourceViewModel {
+    var feedSources: [FeedSource] = []
+    
+    func numberOfFeedSources() -> Int {
+        feedSources.count
+    }
+}
+
+final class SettingsVC: UIViewController {
+    
+    // MARK: - Свойства
+//    private var viewModel: SourceViewModelType?
+//    weak var delegate: SourceListDataDelegate?
+    
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private let frequencies = ["5 минут", "10 минут", "30 минут", "1 час"]
-    private let sources = ["Ведомости", "РБК"]
+//    private let sources = [String]()
     
-    private var selectedFrequency: String = "10 минут" // По умолчанию
-    private var enabledSources: [String: Bool] = ["Ведомости": true, "РБК": true] // Источники включены по умолчанию
+    
+    private var sources: [FeedSource] {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: "newsSources"),
+                  let sources = try? JSONDecoder().decode([FeedSource].self, from: data) else {
+//                // Значения по умолчанию
+//                return [
+//                    FeedSource(name: "Ведомости", url: "https://www.vedomosti.ru/info/rss", isEnabled: true),
+//                    FeedSource(name: "РБК", url: "http://static.feed.rbc.ru/rbc/internal/rss.rbc.ru/rbc.ru/news.rss", isEnabled: true)
+//                ]
+                return []
+            }
+            return sources
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                UserDefaults.standard.set(data, forKey: "newsSources")
+            }
+        }
+    }
+    
+    private var selectedFrequency: String {
+        get {
+            return UserDefaults.standard.string(forKey: "selectedFrequency") ?? "10 минут"
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "selectedFrequency")
+        }
+    }
+    
+    private let emptySourceLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Кажется у Вас нет еще источников новостей\n Добавьте их!"
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.font = UIFont.boldSystemFont(ofSize: 17)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let emptySourceImage: UIImageView = {
+        let image = UIImage(named: "rss-placeholder")
+        let imageView = UIImageView(image: image)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
 
     // MARK: - View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+//        viewModel = SourceViewModel()
+//        viewModel?.loadSources()
+        
+        let addBarButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addSourceClicked))
+        navigationItem.rightBarButtonItem = addBarButton
+        navigationItem.rightBarButtonItem?.tintColor = .link
+        
         setupUI()
     }
 
@@ -36,25 +107,63 @@ class SettingsVC: UIViewController {
         
         view.addSubview(tableView)
         
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        tableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
+    
+    // MARK: - Добавление источника
+        @objc private func addSourceClicked() {
+            let alert = UIAlertController(title: "Добавьте RSS-источник", message: "Введите название и URL", preferredStyle: .alert)
+            
+            alert.addTextField { textField in
+                textField.placeholder = "Название"
+            }
+            alert.addTextField { textField in
+                textField.placeholder = "URL"
+            }
+            
+            let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
+            let saveAction = UIAlertAction(title: "Сохранить", style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                guard let name = alert.textFields?[0].text, !name.isEmpty,
+                      let url = alert.textFields?[1].text, !url.isEmpty else {
+                    return
+                }
+                
+                let newSource = FeedSource(name: name, url: url, isEnabled: true)
+                self.sources.append(newSource) // Добавляем новый источник
+                tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
+                self.saveSourcesToUserDefaults()
+            }
+            
+            alert.addAction(cancelAction)
+            print("Log: \(sources)")
+            alert.addAction(saveAction)
+            print("Log: \(sources)")
+            present(alert, animated: true)
+        }
+        
+        // MARK: - Сохранение источников в UserDefaults
+        private func saveSourcesToUserDefaults() {
+            let encoder = JSONEncoder()
+            if let encodedData = try? encoder.encode(sources) {
+                UserDefaults.standard.set(encodedData, forKey: "newsSources")
+            }
+        }
 }
+
 
 // MARK: - UITableViewDataSource
 extension SettingsVC: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2 // 1: Источники новостей, 2: Частота обновления
+        return 2
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0: return sources.count // Источники новостей
-        case 1: return frequencies.count // Частота обновления
+        case 0: return frequencies.count // Частота обновления
+        case 1: return sources.count // Источники новостей
         default: return 0
         }
     }
@@ -62,19 +171,28 @@ extension SettingsVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
+        cell.accessoryType = .none
+        cell.accessoryView = nil
+        
         switch indexPath.section {
-        case 0: // Источники новостей
-            let source = sources[indexPath.row]
-            cell.textLabel?.text = source
-            let switchControl = UISwitch()
-            switchControl.isOn = enabledSources[source] ?? true
-            switchControl.tag = indexPath.row
-            switchControl.addTarget(self, action: #selector(toggleSource(_:)), for: .valueChanged)
-            cell.accessoryView = switchControl
-        case 1: // Частота обновления
+        case 0:
             let frequency = frequencies[indexPath.row]
             cell.textLabel?.text = frequency
             cell.accessoryType = (frequency == selectedFrequency) ? .checkmark : .none
+        case 1:
+            if sources.isEmpty {
+                cell.textLabel?.text = "Нет источников"
+                cell.selectionStyle = .none
+            } else {
+                let source = sources[indexPath.row]
+                cell.textLabel?.text = source.name
+                let switchControl = UISwitch()
+                switchControl.isOn = source.isEnabled
+                switchControl.tag = indexPath.row
+                switchControl.addTarget(self, action: #selector(toggleSource(_:)), for: .valueChanged)
+                cell.accessoryView = switchControl
+            }
+            
         default:
             break
         }
@@ -87,18 +205,45 @@ extension SettingsVC: UITableViewDataSource {
 extension SettingsVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
-        case 0: return "Источники новостей"
-        case 1: return "Частота обновления"
+        case 0: return "Частота обновления"
+        case 1: return "Источники новостей"
         default: return nil
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
         
-        if indexPath.section == 1 { // Частота обновления
+        if indexPath.section == 0 {
             selectedFrequency = frequencies[indexPath.row]
-            tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
+            tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+        }
+    }
+    
+    // MARK: - Удаление источника с подтверждением
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if indexPath.section == 1 && editingStyle == .delete { // Удаление только в разделе источников
+            let sourceToRemove = sources[indexPath.row]
+            
+            let alert = UIAlertController(
+                title: "Удалить источник",
+                message: "Вы уверены, что хотите удалить источник \"\(sourceToRemove.name)\"?",
+                preferredStyle: .alert
+            )
+            
+            let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
+            let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                
+                self.sources.remove(at: indexPath.row)
+                self.saveSourcesToUserDefaults()
+                
+                tableView.deleteRows(at: [indexPath], with: .fade) // Анимация удаления
+                self.tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
+            }
+            
+            alert.addAction(cancelAction)
+            alert.addAction(deleteAction)
+            present(alert, animated: true)
         }
     }
 }
@@ -106,7 +251,17 @@ extension SettingsVC: UITableViewDelegate {
 // MARK: - Actions
 extension SettingsVC {
     @objc private func toggleSource(_ sender: UISwitch) {
-        let source = sources[sender.tag]
-        enabledSources[source] = sender.isOn
+        sources[sender.tag].isEnabled = sender.isOn
+        saveSourcesToUserDefaults()
+    }
+}
+
+extension SettingsVC {
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        if indexPath.section == 0 {
+            return .none
+        } else {
+            return .delete
+        }
     }
 }

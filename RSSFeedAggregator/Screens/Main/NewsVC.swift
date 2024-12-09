@@ -37,13 +37,10 @@ final class NewsVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.backgroundColor = .systemBackground
-        
         viewModel = FeedViewModel()
         
         setupTableView()
-        
         updateNews()
     }
     
@@ -54,20 +51,58 @@ final class NewsVC: UIViewController {
         
         if reachability.isConnected {
             print("Internet Connection Available!")
-            guard let url = viewModel?.currentSource.url else { return }
+            
+            guard let data = UserDefaults.standard.data(forKey: "newsSources"),
+                  let sources = try? JSONDecoder().decode([FeedSource].self, from: data) else { return }
+            
+            let enabledSources = sources.filter { $0.isEnabled }
+            let dispatchGroup = DispatchGroup()
+            var allNews: [Feed] = []
+            
             refreshControl.beginRefreshing()
             view.isUserInteractionEnabled = false
-            rssParser.updateNews(currentSource: url) {[weak self] (objects) in
-                self?.viewModel?.news = objects
-                self?.tableView.reloadData()
-                CoreDataManager.shared.saveNews(news: objects)
+            
+            for source in enabledSources {
+                dispatchGroup.enter()
+                rssParser.updateNews(currentSource: source.url) { items in
+                    allNews.append(contentsOf: items)
+                    dispatchGroup.leave()
+                }
             }
-            view.isUserInteractionEnabled = true
-            refreshControl.endRefreshing()
+            
+            dispatchGroup.notify(queue: .main) { [weak self] in
+                guard let self = self else { return }
+                
+                let sortedNews = allNews.sorted { first, second in
+                    guard let firstDate = DateFormatter.dateFormatFromXML.date(from: first.date ?? ""),
+                          let secondDate = DateFormatter.dateFormatFromXML.date(from: second.date ?? "") else {
+                        return false
+                    }
+                    return firstDate > secondDate
+                }
+                
+                self.viewModel?.news = sortedNews
+                self.tableView.reloadData()
+                CoreDataManager.shared.saveNews(news: sortedNews)
+                
+                self.view.isUserInteractionEnabled = true
+                self.refreshControl.endRefreshing()
+            }
+            
         } else {
             print("Internet Connection not Available!")
             guard let news = CoreDataManager.shared.loadNews() else { return }
-            viewModel?.news = news
+            
+            let sortedNews = news.sorted { first, second in
+                guard let firstDate = DateFormatter.dateFormatFromXML.date(from: first.date ?? ""),
+                      let secondDate = DateFormatter.dateFormatFromXML.date(from: second.date ?? "") else {
+                    return false
+                }
+                return firstDate > secondDate
+            }
+            
+            viewModel?.news = sortedNews
+            tableView.reloadData()
         }
     }
     
