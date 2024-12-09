@@ -24,6 +24,7 @@ final class FeedViewModel: MainVCViewModelType {
     }
     
     func cellViewModel(forIndexPath indexPath: IndexPath) -> NewsTableViewCellViewModelType? {
+        guard indexPath.row < news.count else { return nil }
         let feed = news[indexPath.row]
         return NewsTableViewCellViewModel(feed: feed, source: currentSource)
     }

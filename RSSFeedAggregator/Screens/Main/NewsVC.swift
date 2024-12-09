@@ -108,12 +108,14 @@ final class NewsVC: UIViewController {
                     return firstDate > secondDate
                 }
                 
-                self.viewModel?.news = sortedNews
-                self.tableView.reloadData()
-                CoreDataManager.shared.saveNews(news: sortedNews)
-                
-                self.view.isUserInteractionEnabled = true
-                self.refreshControl.endRefreshing()
+                DispatchQueue.main.async {
+                    self.viewModel?.news = sortedNews
+                    self.tableView.reloadData()
+                    CoreDataManager.shared.saveNews(news: sortedNews)
+                    
+                    self.view.isUserInteractionEnabled = true
+                    self.refreshControl.endRefreshing()
+                }
             }
             
         } else {
@@ -205,13 +207,15 @@ extension NewsVC: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: NewsTableViewCell.reuseId, for: indexPath) as? NewsTableViewCell, let viewModel = viewModel else { return UITableViewCell() }
-        
-        let cellViewModel = viewModel.cellViewModel(forIndexPath: indexPath)
-        cell.viewModel = cellViewModel
-        
-        return cell
-    }
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: NewsTableViewCell.reuseId, for: indexPath) as? NewsTableViewCell,
+                  let viewModel = viewModel,
+                  let cellViewModel = viewModel.cellViewModel(forIndexPath: indexPath) else {
+                return UITableViewCell()
+            }
+            
+            cell.viewModel = cellViewModel
+            return cell
+        }
 }
 
 // MARK: - UITableViewDelegate

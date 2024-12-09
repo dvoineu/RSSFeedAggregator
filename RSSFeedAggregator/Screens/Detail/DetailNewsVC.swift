@@ -41,11 +41,7 @@ final class DetailNewsVC: UIViewController {
     private func getNavigationBarHeight() -> CGFloat {
         var statusBarHeight: CGFloat = 0
         
-        if #available(iOS 13.0, *) {
-            statusBarHeight = view.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 40
-        } else {
-            statusBarHeight = UIApplication.shared.statusBarFrame.height
-        }
+        statusBarHeight = UIApplication.shared.statusBarFrame.height
         
         let navBarHeight = navigationController?.navigationBar.frame.height ?? 0
         return statusBarHeight + navBarHeight
