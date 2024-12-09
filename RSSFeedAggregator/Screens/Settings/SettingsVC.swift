@@ -69,15 +69,9 @@ final class SettingsVC: UIViewController {
         label.textAlignment = .center
         label.numberOfLines = 0
         label.font = UIFont.boldSystemFont(ofSize: 17)
+        label.textColor = .gray
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
-    }()
-
-    private let emptySourceImage: UIImageView = {
-        let image = UIImage(named: "rss-placeholder")
-        let imageView = UIImageView(image: image)
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
     }()
 
     // MARK: - View Lifecycle
@@ -85,7 +79,7 @@ final class SettingsVC: UIViewController {
         super.viewDidLoad()
 
         let addBarButton = UIBarButtonItem(
-            barButtonSystemItem: .add, target: self, action: #selector(addSourceClicked))
+        barButtonSystemItem: .add, target: self, action: #selector(addSourceClicked))
         navigationItem.rightBarButtonItem = addBarButton
         navigationItem.rightBarButtonItem?.tintColor = .link
 
@@ -101,18 +95,27 @@ final class SettingsVC: UIViewController {
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.translatesAutoresizingMaskIntoConstraints = false
-
         view.addSubview(tableView)
-
+        tableView.addSubview(emptySourceLabel)
+        setupConstrains()
+    }
+    
+    private func setupConstrains() {
         tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        
+        emptySourceLabel.snp.makeConstraints { make in
+            make.center.equalTo(tableView.snp.center)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+
     }
 
     // MARK: - Добавление источника
     @objc private func addSourceClicked() {
         let alert = UIAlertController(
-            title: "Добавьте RSS-источник", message: "Введите название и URL в формате https://example.com/rss",
+            title: "Добавьте RSS-источник", message: "Введите название (не менее 4-х символов) и URL в формате https://example.com/rss",
             preferredStyle: .alert)
 
         alert.addTextField { textField in
@@ -172,7 +175,10 @@ extension SettingsVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0: return frequencies.count
-        case 1: return sources.count
+        case 1:
+            let sourcesCount = sources.count
+            emptySourceLabel.isHidden = sourcesCount > 0
+            return max(sourcesCount, 0)
         default: return 0
         }
     }
@@ -189,20 +195,15 @@ extension SettingsVC: UITableViewDataSource {
             cell.textLabel?.text = frequency
             cell.accessoryType = (frequency == selectedFrequency) ? .checkmark : .none
         case 1:
-            if sources.isEmpty {
-                cell.textLabel?.text = "Нет источников"
-                cell.selectionStyle = .none
-            } else {
-                let source = sources[indexPath.row]
-                cell.textLabel?.text = source.name
-                let switchControl = UISwitch()
-                switchControl.isOn = source.isEnabled
-                switchControl.tag = indexPath.row
-                switchControl.addTarget(
-                    self, action: #selector(toggleSource(_:)), for: .valueChanged)
-                cell.accessoryView = switchControl
-            }
-
+            let source = sources[indexPath.row]
+            cell.textLabel?.text = source.name
+            cell.textLabel?.textColor = .label
+            let switchControl = UISwitch()
+            switchControl.isOn = source.isEnabled
+            switchControl.tag = indexPath.row
+            switchControl.addTarget(
+                self, action: #selector(toggleSource(_:)), for: .valueChanged)
+            cell.accessoryView = switchControl
         default:
             break
         }
@@ -235,7 +236,7 @@ extension SettingsVC: UITableViewDelegate {
         _ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle,
         forRowAt indexPath: IndexPath
     ) {
-        if indexPath.section == 1 && editingStyle == .delete {  // Удаление только в разделе источников
+        if indexPath.section == 1 && editingStyle == .delete {
             let sourceToRemove = sources[indexPath.row]
 
             let alert = UIAlertController(
@@ -252,7 +253,7 @@ extension SettingsVC: UITableViewDelegate {
                 self.sources.remove(at: indexPath.row)
                 self.saveSourcesToUserDefaults()
 
-                tableView.deleteRows(at: [indexPath], with: .fade)  // Анимация удаления
+                tableView.deleteRows(at: [indexPath], with: .fade)
                 self.tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
             }
 
